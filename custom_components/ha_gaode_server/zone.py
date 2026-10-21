@@ -23,6 +23,18 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
+def _read_json_file(path):
+    """同步读取 JSON 文件（供 async_add_executor_job 调用）"""
+    with open(path, "r", encoding="utf-8") as file:
+        return json.load(file)
+
+
+def _write_json_file(path, data):
+    """同步写入 JSON 文件（供 async_add_executor_job 调用）"""
+    with open(path, "w", encoding="utf-8") as file:
+        json.dump(data, file)
+
+
 class DxZone:
     """Hanlde zone"""
 
@@ -96,10 +108,10 @@ class DxZoneView(HomeAssistantView):
     async def get_by_entity_id_in_file(self, entity_id):
         """get saved data by entity_id"""
         if os.path.exists(self.absolute_file_name):
-            with open(self.absolute_file_name, "r", encoding="utf-8") as file:
-                save_data = json.load(file)
-                return_data = save_data.get(entity_id)
-                return return_data
+            save_data = await self.hass.async_add_executor_job(
+                _read_json_file, self.absolute_file_name
+            )
+            return save_data.get(entity_id)
 
     async def save(self, data):
         """To save zone entity"""
@@ -109,14 +121,16 @@ class DxZoneView(HomeAssistantView):
         zone = hass.states.get(entity_id)
 
         if os.path.exists(self.absolute_file_name):
-            with open(self.absolute_file_name, "r", encoding="utf-8") as file:
-                save_data = json.load(file)
-                if save_data is None:
-                    save_data = {}
+            save_data = await self.hass.async_add_executor_job(
+                _read_json_file, self.absolute_file_name
+            )
+            if save_data is None:
+                save_data = {}
         if zone is not None:
             save_data[entity_id] = data
-            with open(file=self.absolute_file_name, mode="w", encoding="utf-8") as file:
-                json.dump(save_data, file)
+            await self.hass.async_add_executor_job(
+                _write_json_file, self.absolute_file_name, save_data
+            )
             clone_attributes = dict(zone.attributes)
             clone_attributes.update(data)
             self.hass.states.async_set(entity_id, zone.state, clone_attributes)
@@ -126,8 +140,9 @@ class DxZoneView(HomeAssistantView):
         hass = self.hass
         if os.path.exists(self.absolute_file_name):
             new_save_data = {}
-            with open(self.absolute_file_name, "r", encoding="utf-8") as file:
-                save_data = json.load(file)
+            save_data = await hass.async_add_executor_job(
+                _read_json_file, self.absolute_file_name
+            )
             if save_data is not None:
                 zone_list = hass.states.async_all([CONF_ZONE])
                 if len(zone_list) > 0:
@@ -140,7 +155,6 @@ class DxZoneView(HomeAssistantView):
                             clone_attributes.update(now_data)
                             new_save_data[entity_id] = now_data
                             self.hass.states.async_set(entity_id, 0, clone_attributes)
-                    with open(
-                        file=self.absolute_file_name, mode="w", encoding="utf-8"
-                    ) as file:
-                        json.dump(new_save_data, file)
+                    await hass.async_add_executor_job(
+                        _write_json_file, self.absolute_file_name, new_save_data
+                    )

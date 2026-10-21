@@ -14,7 +14,8 @@ from homeassistant.const import (
     EVENT_HOMEASSISTANT_STARTED,
     ATTR_ENTITY_ID,
 )
-from homeassistant.core import HomeAssistant, Config
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.typing import ConfigType
 
 from .dx_exception import ConfigException
 from .gps_logger import DxGpsLogger, DxGpsLoggerCacheView, DxGpsLoggerSearchView
@@ -35,7 +36,7 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
-def handle_config(hass: HomeAssistant, config: Config):
+def handle_config(hass: HomeAssistant, config: ConfigType):
     """
     Handle hass config
     """
@@ -94,7 +95,7 @@ async def async_setup_entry(hass: HomeAssistant, config: ConfigEntry) -> bool:
     return True
 
 
-def async_setup(hass: HomeAssistant, config: Config) -> bool:
+def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """
     Hass entry
     """

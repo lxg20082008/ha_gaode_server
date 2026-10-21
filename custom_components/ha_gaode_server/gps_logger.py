@@ -18,7 +18,8 @@ from homeassistant.const import (
     CONF_RADIUS,
     CONF_ZONE,
 )
-from homeassistant.core import HomeAssistant, Config
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.typing import ConfigType
 from .db import DxDb
 from .const import (
     CUSTOM_ATTR_DX_RECORD_DATETIME,
@@ -48,7 +49,7 @@ class DxGpsLogger:
     ignore_distance_device_trackers = None
     push_device_trackers_post = None
 
-    def __init__(self, hass: HomeAssistant, config: Config) -> None:
+    def __init__(self, hass: HomeAssistant, config: ConfigType) -> None:
         self.hass = hass
         self.gaode_server_key = config.get("gaode_server_key")
         self.change_gpslogger_state = config.get("change_gpslogger_state")
