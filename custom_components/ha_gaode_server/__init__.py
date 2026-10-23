@@ -26,6 +26,7 @@ from .const import (
     DOMAIN,
     CONFIG_DB_URL,
     CONFIG_CHANGE_GPSLOGGER_STATE,
+    CONFIG_CHANGE_GPSLOGGER_COORD,
     CONFIG_GAODE_SERVER_KEY,
     CONFIG_IGNORE_DISTANCE_DEVICE_TRACKERS,
     CONFIG_IGNORE_TRANSFORM_DEVICE_TRACKERS,
@@ -48,6 +49,7 @@ def handle_config(hass: HomeAssistant, config: ConfigType):
     config_dir = hass.config.path()
     gaode_server_key = None
     change_gpslogger_state = None
+    change_gpslogger_coord = None
     db_url = None
     ignore_transform_device_trackers = None
     ignore_device_trackers = None
@@ -73,8 +75,11 @@ def handle_config(hass: HomeAssistant, config: ConfigType):
         ignore_distance_device_trackers = ha_gaode_server.get(
             CONFIG_IGNORE_DISTANCE_DEVICE_TRACKERS
         )
+        change_gpslogger_coord = ha_gaode_server.get(CONFIG_CHANGE_GPSLOGGER_COORD)
         if change_gpslogger_state is None:
             change_gpslogger_state = True
+        if change_gpslogger_coord is None:
+            change_gpslogger_coord = True
         db_url = ha_gaode_server.get(CONFIG_DB_URL)
         if db_url is None:
             db_url = DEFAULT_DB_NAME
@@ -83,6 +88,7 @@ def handle_config(hass: HomeAssistant, config: ConfigType):
     return {
         CONFIG_GAODE_SERVER_KEY: gaode_server_key,
         CONFIG_CHANGE_GPSLOGGER_STATE: change_gpslogger_state,
+        CONFIG_CHANGE_GPSLOGGER_COORD: change_gpslogger_coord,
         CONFIG_DB_URL: db_url,
         CONFIG_IGNORE_TRANSFORM_DEVICE_TRACKERS: ignore_transform_device_trackers,
         CONFIG_IGNORE_DISTANCE_DEVICE_TRACKERS: ignore_distance_device_trackers,
@@ -105,6 +111,7 @@ def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     (
         gaode_server_key,
         change_gpslogger_state,
+        change_gpslogger_coord,
         db_url,
         ignore_transform_device_trackers,
         ignore_distance_device_trackers,
@@ -119,6 +126,7 @@ def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
         {
             "gaode_server_key": gaode_server_key,
             "change_gpslogger_state": change_gpslogger_state,
+            "change_gpslogger_coord": change_gpslogger_coord,
             "db_instance": db_instance,
             "ignore_transform_device_trackers": ignore_transform_device_trackers,
             "ignore_distance_device_trackers": ignore_distance_device_trackers,

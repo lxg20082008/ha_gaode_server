@@ -53,6 +53,7 @@ class DxGpsLogger:
         self.hass = hass
         self.gaode_server_key = config.get("gaode_server_key")
         self.change_gpslogger_state = config.get("change_gpslogger_state")
+        self.change_gpslogger_coord = config.get("change_gpslogger_coord")
         self.db_instance = config.get("db_instance")
         self.ignore_transform_device_trackers = config.get(
             "ignore_transform_device_trackers"
@@ -223,7 +224,17 @@ class DxGpsLogger:
                         _LOGGER.debug("Resp data: %s", response_data)
 
             # 修改状态
-            self.hass.states.async_set(entity_id, now_state, clone_attributes)
+            if self.change_gpslogger_coord and ll is not None:
+                state_attributes = dict(clone_attributes)
+                state_attributes[ATTR_LATITUDE] = float(
+                    ll[CUSTOM_ATTR_GCJ02_LATITUDE]
+                )
+                state_attributes[ATTR_LONGITUDE] = float(
+                    ll[CUSTOM_ATTR_GCJ02_LONGITUDE]
+                )
+                self.hass.states.async_set(entity_id, now_state, state_attributes)
+            else:
+                self.hass.states.async_set(entity_id, now_state, clone_attributes)
 
     async def _transform_gps(self, entity_id, latitude, longitude):
         _LOGGER.debug("Start method _transform_gps")
